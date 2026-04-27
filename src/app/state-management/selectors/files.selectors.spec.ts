@@ -2,7 +2,7 @@ import * as fromSelectors from "./files.selectors";
 import { selectSettings } from "./user.selectors";
 import { GenericFilters } from "state-management/models";
 import { mockOrigDatablock as origDatablock } from "shared/MockStubs";
-import { FilesState } from "state-management/state/files.store";
+import { FilesState, DatasetFilter } from "state-management/state/files.store";
 import { initialUserState } from "state-management/state/user.store";
 
 const filesFilters: GenericFilters = {
@@ -11,12 +11,22 @@ const filesFilters: GenericFilters = {
   limit: 25,
 };
 
+const datasetFilters: DatasetFilter = {
+  sortField: "name desc",
+  skip: 0,
+  limit: 25,
+  datasetId: "",
+};
+
 const initialFilesState: FilesState = {
   origDatablocks: [],
+  currentDatasetOrigDatablocks: [],
   currentOrigDatablock: origDatablock,
   totalCount: 0,
+  currentDatasetCount: 0,
 
   filters: filesFilters,
+  datasetFilter: datasetFilters,
 };
 
 describe("Files Selectors", () => {

@@ -1,6 +1,10 @@
 import { DatasetState } from "state-management/state/datasets.store";
 import { createFeatureSelector, createSelector } from "@ngrx/store";
-import { selectFilters as selectUserFilters } from "state-management/selectors/user.selectors";
+import {
+  selectFilters as selectUserFilters,
+  selectTablesSettings,
+  selectHasFetchedSettings,
+} from "state-management/selectors/user.selectors";
 
 const selectDatasetState = createFeatureSelector<DatasetState>("datasets");
 
@@ -53,6 +57,29 @@ export const selectCurrentDatasetWithOnlyScientificMetadataKey = createSelector(
 export const selectCurrentOrigDatablocks = createSelector(
   selectCurrentDataset,
   (dataset) => (dataset ? dataset.origdatablocks : []),
+);
+
+export const selectCurrentDataFiles = createSelector(
+  selectCurrentOrigDatablocks,
+  (blocks) => blocks?.flatMap((b) => b.dataFileList) ?? [],
+);
+
+export const selectCurrentDataFilesCount = createSelector(
+  selectCurrentDataset,
+  (dataset) => (dataset ? dataset.numberOfFiles : 0),
+);
+
+export const selectCurrentDatafilessWithTableSettings = createSelector(
+  selectCurrentDataFiles,
+  selectTablesSettings,
+  selectHasFetchedSettings,
+  (datafiles, tablesSettings, hasFetchedSettings) => {
+    return {
+      datafiles,
+      tablesSettings,
+      hasFetchedSettings,
+    };
+  },
 );
 
 export const selectCurrentDatablocks = createSelector(

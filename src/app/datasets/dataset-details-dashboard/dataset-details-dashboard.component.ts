@@ -47,6 +47,7 @@ import {
 import { MatDialog } from "@angular/material/dialog";
 import { AppConfigService } from "app-config.service";
 import { fetchInstrumentAction } from "state-management/actions/instruments.actions";
+import { fetchDatasetOrigDatablocksAction } from "state-management/actions/files.actions";
 
 export interface JWT {
   jwt: string;
@@ -60,6 +61,7 @@ enum TAB {
   details = "Details",
   jsonScientificMetadata = "Scientific Metadata (JSON)",
   datafiles = "Datafiles",
+  dynamicDatafiles = "Datafiles (Dynamic)",
   relatedDatasets = "Related Datasets",
   reduce = "Reduce",
   logbook = "Logbook",
@@ -105,7 +107,14 @@ export class DatasetDetailsDashboardComponent
       action: fetchRelatedDatasetsAction,
       loaded: false,
     },
-    [TAB.datafiles]: { action: fetchOrigDatablocksAction, loaded: false },
+    [TAB.datafiles]: {
+      action: fetchOrigDatablocksAction,
+      loaded: false,
+    },
+    [TAB.dynamicDatafiles]: {
+      action: fetchDatasetOrigDatablocksAction,
+      loaded: false,
+    },
     [TAB.logbook]: { action: fetchDatasetLogbookAction, loaded: false },
     [TAB.attachments]: { action: fetchAttachmentsAction, loaded: false },
     [TAB.admin]: { action: fetchDatablocksAction, loaded: false },
@@ -175,6 +184,12 @@ export class DatasetDetailsDashboardComponent
             {
               location: "./datafiles",
               label: TAB.datafiles,
+              icon: "cloud_download",
+              enabled: true,
+            },
+            {
+              location: "./dynamicDatafiles",
+              label: TAB.dynamicDatafiles,
               icon: "cloud_download",
               enabled: true,
             },
@@ -265,6 +280,20 @@ export class DatasetDetailsDashboardComponent
             const { loaded } = this.fetchDataActions[TAB.logbook];
             if (!loaded) {
               this.fetchDataActions[TAB.logbook].loaded = true;
+            }
+          }
+          break;
+        case TAB.dynamicDatafiles:
+          {
+            const { action, loaded } = this.fetchDataActions[tab];
+            if (!loaded) {
+              const dargs = {
+                datasetId: this.dataset?.pid,
+                skip: 0,
+                limit: 10,
+              };
+              this.fetchDataActions[tab].loaded = true;
+              this.store.dispatch(action(dargs));
             }
           }
           break;

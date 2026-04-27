@@ -52,6 +52,49 @@ export class FilesEffects {
     );
   });
 
+  fetchDatasetOrigDatablocks$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(fromActions.fetchDatasetOrigDatablocksAction),
+      switchMap(
+        ({ datasetId, limit, search, skip, sortColumn, sortDirection }) => {
+          const limitsParam = {
+            skip: skip,
+            limit: limit,
+            order: undefined,
+          };
+
+          if (sortColumn && sortDirection) {
+            limitsParam.order = `${sortColumn}:${sortDirection}`;
+          }
+
+          const queryParams = {
+            datasetId: datasetId,
+            text: search || undefined,
+          };
+
+          return this.origDataBlocksService
+            .origDatablocksControllerFullqueryFilesV3(
+              JSON.stringify(limitsParam),
+              JSON.stringify(queryParams),
+            )
+            .pipe(
+              mergeMap((origDatablocks: OrigDatablock[]) => [
+                fromActions.fetchDatasetOrigDatablocksCompleteAction({
+                  currentDatasetOrigDatablocks: origDatablocks,
+                }),
+                fromActions.fetchCountAction({
+                  fields: queryParams,
+                }),
+              ]),
+              catchError(() =>
+                of(fromActions.fetchDatasetOrigDatablocksFailedAction()),
+              ),
+            );
+        },
+      ),
+    );
+  });
+
   fetchCount$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(fromActions.fetchCountAction),
@@ -65,7 +108,7 @@ export class FilesEffects {
               const { all } = res[0] as any;
               const count = all && all.length > 0 ? all[0].totalSets : 0;
 
-              return fromActions.fetchCountCompleteAction({ count });
+              return fromActions.fetchCountCompleteAction({ count, fields });
             }),
             catchError(() => of(fromActions.fetchCountFailedAction())),
           ),
@@ -77,6 +120,7 @@ export class FilesEffects {
     return this.actions$.pipe(
       ofType(
         fromActions.fetchAllOrigDatablocksAction,
+        fromActions.fetchDatasetOrigDatablocksAction,
         fromActions.fetchCountAction,
       ),
       switchMap(() => of(loadingAction())),
@@ -88,6 +132,8 @@ export class FilesEffects {
       ofType(
         fromActions.fetchAllOrigDatablocksCompleteAction,
         fromActions.fetchAllOrigDatablocksFailedAction,
+        fromActions.fetchDatasetOrigDatablocksCompleteAction,
+        fromActions.fetchDatasetOrigDatablocksFailedAction,
         fromActions.fetchCountCompleteAction,
         fromActions.fetchCountFailedAction,
       ),

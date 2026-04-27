@@ -16,11 +16,27 @@ const reducer = createReducer(
   ),
 
   on(
-    fromActions.fetchCountCompleteAction,
-    (state, { count }): FilesState => ({
+    fromActions.fetchDatasetOrigDatablocksCompleteAction,
+    (state, { currentDatasetOrigDatablocks }): FilesState => ({
       ...state,
-      totalCount: count,
+      currentDatasetOrigDatablocks,
     }),
+  ),
+
+  on(
+    fromActions.fetchCountCompleteAction,
+    (state, { count, fields }): FilesState => {
+      if (fields.datasetId) {
+        return {
+          ...state,
+          currentDatasetCount: count,
+        };
+      }
+      return {
+        ...state,
+        totalCount: count,
+      };
+    },
   ),
 
   on(
@@ -40,7 +56,7 @@ const reducer = createReducer(
 );
 
 export const filesReducer = (state: FilesState | undefined, action: Action) => {
-  if (action.type.indexOf("[Orig]") !== -1) {
+  if (action.type.indexOf("[OrigDatablock]") !== -1) {
     console.log("Action came in! " + action.type);
   }
   return reducer(state, action);

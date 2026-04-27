@@ -9,6 +9,7 @@ import {
   LabelsLocalization,
   ListSettings,
   TableColumn,
+  DatafileTableColumn,
 } from "state-management/models";
 
 export interface OAuth2Endpoint {
@@ -156,6 +157,7 @@ export interface AppConfigInterface {
   metadataEditingUnitListDisabled?: boolean;
   defaultDatasetsListSettings?: ListSettings;
   defaultProposalsListSettings?: ListSettings;
+  defaultDatafileColumnsList?: DatafileTableColumn[];
   thumbnailFetchLimitPerPage: number;
   maxFileUploadSizeInMb?: string;
   datasetDetailComponent?: DatasetDetailComponentConfig;

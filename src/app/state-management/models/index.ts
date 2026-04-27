@@ -244,3 +244,18 @@ export const getSettingKey = (
 
   return settingKey.key;
 };
+export interface DatafileTableColumn {
+  name: string;
+  header: string;
+  path?: string;
+  order: number;
+  type: "standard" | "custom" | "date" | "hoverContent" | "editable";
+  enabled: boolean;
+  format?: string;
+  width?: number;
+  sort?: "asc" | "desc";
+  inList: boolean;
+  dateFormat?: string;
+}
+
+export interface OrigDatablockFile {}
