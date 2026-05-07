@@ -125,6 +125,16 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.loginLocalEnabled = this.appConfig.loginLocalEnabled;
     this.oAuth2Endpoints = this.appConfig.oAuth2Endpoints;
 
+    const storedRedirect = sessionStorage.getItem("postLoginRedirect");
+    const sessionExpiredNotified = sessionStorage.getItem(
+      "sessionExpiredNotified",
+    );
+    if (storedRedirect && sessionExpiredNotified !== "true") {
+      this.returnUrl = storedRedirect;
+      sessionStorage.removeItem("postLoginRedirect");
+      sessionStorage.removeItem("sessionExpiredNotified");
+    }
+
     this.proceedSubscription = this.vm$
       .pipe(filter((vm) => vm.isLoggedIn))
       .subscribe(() => {
