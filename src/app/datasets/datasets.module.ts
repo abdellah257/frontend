@@ -26,6 +26,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatListModule } from "@angular/material/list";
 import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatRadioModule } from "@angular/material/radio";
 import { MatSelectModule } from "@angular/material/select";
 import { MatSidenavModule } from "@angular/material/sidenav";
@@ -82,6 +83,7 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { JsonFormsModule } from "@jsonforms/angular";
 import { JsonFormsAngularMaterialModule } from "@jsonforms/angular-material";
 import { DatasetDetailDynamicComponent } from "./dataset-detail/dataset-detail-dynamic/dataset-detail-dynamic.component";
+import { HDF5ViewerComponent } from "./datafiles/hdf5viewer/hdf5viewer.component";
 import { DatasetDetailWrapperComponent } from "./dataset-detail/dataset-detail-wrapper.component";
 import { DatasetInlineEditCellComponent } from "./dataset-table/dataset-inline-edit-cell.component";
 import { JsonHeadPipe } from "shared/pipes/json-head.pipe";
@@ -121,6 +123,7 @@ import { filesReducer } from "state-management/reducers/files.reducer";
     MatListModule,
     MatOptionModule,
     MatPaginatorModule,
+    MatProgressSpinnerModule,
     MatRadioModule,
     MatSelectModule,
     MatSidenavModule,
@@ -194,6 +197,7 @@ import { filesReducer } from "state-management/reducers/files.reducer";
     AdminTabComponent,
     RelatedDatasetsComponent,
     DatasetsFilterSettingsComponent,
+    HDF5ViewerComponent,
   ],
   providers: [
     ArchivingService,

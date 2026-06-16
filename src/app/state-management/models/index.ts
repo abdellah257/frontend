@@ -19,6 +19,7 @@ export interface Settings {
   fe_sample_table_conditions?: ConditionConfig[];
   fe_instrument_table_columns?: TableColumn[];
   fe_file_table_columns?: TableColumn[];
+  fe_datafiles_table_columns?: TableColumn[];
 }
 
 export interface TableColumn {
@@ -220,6 +221,11 @@ export const SETTINGS_CONFIG = [
     configKey: "columns",
   },
   { key: "fe_file_table_columns", scope: "file", configKey: "columns" },
+  {
+    key: "fe_datafiles_table_columns",
+    scope: "datafiles",
+    configKey: "columns",
+  },
 ];
 
 export type SettingScope =
@@ -227,7 +233,8 @@ export type SettingScope =
   | "proposal"
   | "sample"
   | "instrument"
-  | "file";
+  | "file"
+  | "datafiles";
 export type SettingKind = "columns" | "filters" | "conditions";
 
 export const getSettingKey = (

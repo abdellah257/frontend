@@ -29,6 +29,7 @@ import {
   ConditionSettingScope,
   MessageType,
   SETTINGS_CONFIG,
+  SettingScope,
 } from "state-management/models";
 import { Store } from "@ngrx/store";
 import {
@@ -647,12 +648,7 @@ export class UserEffects {
             actions.push(
               fromActions.setTableColumnsAction({
                 columns: columnsConfig,
-                scope: s.scope as
-                  | "dataset"
-                  | "proposal"
-                  | "sample"
-                  | "instrument"
-                  | "file",
+                scope: s.scope as SettingScope,
               }),
             );
           },

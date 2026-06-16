@@ -287,13 +287,15 @@ export class DatasetDetailsDashboardComponent
           {
             const { action, loaded } = this.fetchDataActions[tab];
             if (!loaded) {
-              const dargs = {
-                datasetId: this.dataset?.pid,
-                skip: 0,
-                limit: 10,
-              };
               this.fetchDataActions[tab].loaded = true;
-              this.store.dispatch(action(dargs));
+              if (this.dataset) {
+                const dargs = {
+                  datasetId: this.dataset?.pid,
+                  skip: 0,
+                  limit: 10,
+                };
+                this.store.dispatch(action(dargs));
+              }
             }
           }
           break;

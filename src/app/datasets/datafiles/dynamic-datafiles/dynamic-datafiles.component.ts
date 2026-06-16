@@ -13,47 +13,30 @@ import {
   IRowEvent,
   ITableEvent,
   TableEventType,
+  RowEventType,
   TableSelectionMode,
 } from "shared/modules/dynamic-material-table/models/table-row.model";
 import { Store } from "@ngrx/store";
 import { ActivatedRoute, Router } from "@angular/router";
 import { updateUserSettingsAction } from "state-management/actions/user.actions";
 import { Sort } from "@angular/material/sort";
-import { selectFilesWithCountAndTableSettings } from "state-management/selectors/files.selectors";
+import { selectDatafilesWithCountAndTableSettings } from "state-management/selectors/files.selectors";
 import { fetchDatasetOrigDatablocksAction } from "state-management/actions/files.actions";
 import { get } from "lodash-es";
 import { DatePipe } from "@angular/common";
 import { actionMenu } from "shared/modules/dynamic-material-table/utilizes/default-table-settings";
 import { TableConfigService } from "shared/services/table-config.service";
-import {
-  TableColumn,
-  PageChangeEvent,
-  CheckboxEvent,
-} from "shared/modules/table/table.component";
-import {
-  selectIsLoading,
-  selectIsLoggedIn,
-} from "state-management/selectors/user.selectors";
-import {
-  CreateUserJWT,
-  UsersService,
-  CreateJobDtoV3,
-} from "@scicatproject/scicat-sdk-ts-angular";
 import { FileSizePipe } from "shared/pipes/filesize.pipe";
 import { TimeDurationPipe } from "shared/pipes/time-duration.pipe";
-import { MatCheckboxChange } from "@angular/material/checkbox";
 import { MatDialog } from "@angular/material/dialog";
-import { PublicDownloadDialogComponent } from "datasets/public-download-dialog/public-download-dialog.component";
-import { submitJobAction } from "state-management/actions/jobs.actions";
 import { AppConfigService } from "app-config.service";
-import { NgForm } from "@angular/forms";
 import { DataFiles_File } from "../datafiles.interfaces";
 import {
   ActionItemDataset,
   ActionItems,
 } from "shared/modules/configurable-actions/configurable-action.interfaces";
-import { AuthService } from "shared/services/auth/auth.service";
 import { selectCurrentDataset } from "state-management/selectors/datasets.selectors";
+import { HDF5ViewerComponent } from "../hdf5viewer/hdf5viewer.component";
 
 @Component({
   selector: "dynamic-datafiles",
@@ -91,7 +74,6 @@ export class DynamicDatafilesComponent implements OnInit, OnDestroy {
   globalTextSearch = "";
   defaultPageSize = 10;
   defaultPageSizeOptions = [5, 10, 25, 100];
-  tablesSettings: object;
   tableDefaultSettingsConfig: ITableSetting = {
     visibleActionMenu: actionMenu,
     settingList: [
@@ -120,6 +102,22 @@ export class DynamicDatafilesComponent implements OnInit, OnDestroy {
             name: "dataFileList.metadata.measurement_type",
             icon: "person",
             header: "Measurement type",
+            customRender: (column, row) => {
+              return get(row, column.name, "-");
+            },
+          },
+          {
+            name: "dataFileList.metadata.sample_type",
+            icon: "person",
+            header: "Sample type",
+            customRender: (column, row) => {
+              return get(row, column.name, "-");
+            },
+          },
+          {
+            name: "dataFileList.metadata.measurement_subtype",
+            icon: "person",
+            header: "Measurement Subtype",
             customRender: (column, row) => {
               return get(row, column.name, "-");
             },
@@ -164,13 +162,12 @@ export class DynamicDatafilesComponent implements OnInit, OnDestroy {
   maxFileSizeWarning: string | null =
     this.appConfig.maxFileSizeWarning ||
     `Some files are above the max size ${this.fileSizePipe.transform(this.maxFileSize)}`;
-  jwt: CreateUserJWT;
-  auth_token: string;
 
   constructor(
     public appConfigService: AppConfigService,
     private store: Store,
     private router: Router,
+    private dialog: MatDialog,
     private route: ActivatedRoute,
     private datePipe: DatePipe,
     private fileSizePipe: FileSizePipe,
@@ -184,20 +181,19 @@ export class DynamicDatafilesComponent implements OnInit, OnDestroy {
         if (dataset) {
           this.actionItems.datasets = <ActionItemDataset[]>[dataset];
           this.datasetId = dataset.pid;
+          this.sourceFolder = dataset.sourceFolder;
         }
       }),
     );
     this.subscriptions.push(
       this.store
-        .select(selectFilesWithCountAndTableSettings)
+        .select(selectDatafilesWithCountAndTableSettings)
         .subscribe(({ origDatablocks, count, tablesSettings }) => {
-          this.tablesSettings = tablesSettings;
           this.dataSource.next(origDatablocks);
           this.pending = false;
           this.count = count;
 
-          const savedTableConfigColumns =
-            tablesSettings?.[this.tableName]?.columns;
+          const savedTableConfigColumns = tablesSettings?.columns;
           const tableSort = this.getTableSort();
           const paginationConfig = this.getTablePaginationConfig(count);
 
@@ -300,23 +296,16 @@ export class DynamicDatafilesComponent implements OnInit, OnDestroy {
 
   saveTableSettings(setting: ITableSetting) {
     this.pending = true;
-    const columnsSetting = setting.columnSetting.map((column) => {
-      const { name, display, index, width } = column;
+    const columnsSetting = setting.columnSetting.map((column, index) => {
+      const { name, display, width } = column;
 
-      return { name, display, index, width };
+      return { name, display, order: index, width };
     });
-
-    const tablesSettings = {
-      ...this.tablesSettings,
-      [setting.settingName || this.tableName]: {
-        columns: columnsSetting,
-      },
-    };
 
     this.store.dispatch(
       updateUserSettingsAction({
         property: {
-          tablesSettings,
+          fe_datafiles_table_columns: columnsSetting,
         },
       }),
     );
@@ -334,7 +323,35 @@ export class DynamicDatafilesComponent implements OnInit, OnDestroy {
     }
   }
 
-  onRowClick(event: IRowEvent<object>) {}
+  onRowClick(event: IRowEvent<object>) {
+    if (event.event === RowEventType.RowClick) {
+      const filePath: string =
+        get(event.sender.row, "dataFileList.path") ||
+        get(event.sender.row, "dataFileList.0.path") ||
+        get(event.sender.row, "path");
+
+      if (typeof filePath === "string" && filePath.length) {
+        const url = this.buildFileUrl(filePath);
+        this.openHDF5Viewer("https://data.ill.fr/myhdf5/view", url);
+      }
+    }
+  }
+
+  buildFileUrl(filePath: string): string {
+    const sourceFolder = this.sourceFolder.replace(/\/+$/, "");
+    const normalizedFilePath = filePath.replace(/^\/+/, "");
+
+    return `${sourceFolder}/${normalizedFilePath}`;
+  }
+
+  openHDF5Viewer(serviceUrl: string, fileUrl: string): void {
+    this.dialog.open(HDF5ViewerComponent, {
+      width: "90vw",
+      height: "90vh",
+      data: { baseUrl: serviceUrl, fileUrl: fileUrl },
+      panelClass: "hdf5-viewer",
+    });
+  }
 
   onTableEvent({ event, sender }: ITableEvent) {
     if (event === TableEventType.SortChanged) {

@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>HDF5 Viewer: {{ data.fileUrl }}</h2>
+<mat-dialog-content>
+  <div class="iframe-container">
+    <div *ngIf="loading" class="loading-overlay">
+      <mat-spinner></mat-spinner>
+      <p>Loading HDF5 viewer...</p>
+    </div>
+    <iframe [src]="trustedUrl" frameborder="0" (load)="onIframeLoad()"></iframe>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+  <button mat-raised-button color="primary" (click)="openInNewTab()">
+    Open in new tab
+  </button>
+</mat-dialog-actions>

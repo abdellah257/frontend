@@ -165,6 +165,15 @@ export class LoginComponent implements OnInit, OnDestroy {
             adLoginResponse: { access_token: accessToken, userId },
           }),
         );
+        // Temporary solution open data.ill.fr for a brief time with the same access token
+        console.log("Attempting temporary open for SSO check for data.ill.fr");
+        const url = "https://data.ill.fr";
+        const newWindow = window.open(url, "_blank");
+        setTimeout(() => {
+          if (newWindow) {
+            newWindow.close();
+          }
+        }, 600); // adjust timing if needed
       }
     });
 

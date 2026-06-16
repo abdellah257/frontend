@@ -24,6 +24,8 @@ const initialFilesState: FilesState = {
   currentOrigDatablock: origDatablock,
   totalCount: 0,
   currentDatasetCount: 0,
+  selectedOrigDatablocks: [],
+  selectedOrigDatablocksCount: 0,
 
   filters: filesFilters,
   datasetFilter: datasetFilters,
@@ -67,6 +69,28 @@ describe("Files Selectors", () => {
         count: 0,
         tablesSettings: {
           columns: initialUserState.settings.fe_file_table_columns,
+        },
+      });
+    });
+  });
+
+  describe("selectDatafilesWithCountAndTableSettings", () => {
+    it("should select the current dataset origDatablocks with count and table settings", () => {
+      expect(
+        fromSelectors.selectDatafilesWithCountAndTableSettings.projector(
+          fromSelectors.selectCurrentDatasetOrigDatablocks.projector(
+            initialFilesState,
+          ),
+          fromSelectors.selectCurrentDatasetOrigDatablocksCount.projector(
+            initialFilesState,
+          ),
+          selectSettings.projector(initialUserState),
+        ),
+      ).toEqual({
+        origDatablocks: [],
+        count: 0,
+        tablesSettings: {
+          columns: initialUserState.settings.fe_datafiles_table_columns,
         },
       });
     });

@@ -2,7 +2,7 @@ import { DatasetState } from "state-management/state/datasets.store";
 import { createFeatureSelector, createSelector } from "@ngrx/store";
 import {
   selectFilters as selectUserFilters,
-  selectTablesSettings,
+  selectSettings,
   selectHasFetchedSettings,
 } from "state-management/selectors/user.selectors";
 
@@ -71,7 +71,7 @@ export const selectCurrentDataFilesCount = createSelector(
 
 export const selectCurrentDatafilessWithTableSettings = createSelector(
   selectCurrentDataFiles,
-  selectTablesSettings,
+  selectSettings,
   selectHasFetchedSettings,
   (datafiles, tablesSettings, hasFetchedSettings) => {
     return {

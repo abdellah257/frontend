@@ -66,6 +66,15 @@ export class AuthCallbackComponent implements OnInit {
         );
 
         // After the user is authenticated, we will redirect to the home page
+        // Temporary solution open data.ill.fr for a brief time with the same access token
+        // console.log("Attempting temporary open for SSO check for data.ill.fr");
+        // const url = "https://data.ill.fr";
+        // const newWindow = window.open(url, "_blank");
+        // setTimeout(() => {
+        //   if (newWindow) {
+        //     newWindow.close();
+        //   }
+        // }, 300); // adjust timing if needed
         // or the value of returnUrl query param
         this.router.navigateByUrl(returnUrl || "/");
       }

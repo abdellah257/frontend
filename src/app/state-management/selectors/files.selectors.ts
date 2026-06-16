@@ -46,3 +46,16 @@ export const selectFilesWithCountAndTableSettings = createSelector(
     },
   }),
 );
+
+export const selectDatafilesWithCountAndTableSettings = createSelector(
+  selectCurrentDatasetOrigDatablocks,
+  selectCurrentDatasetOrigDatablocksCount,
+  selectSettings,
+  (origDatablocks, count, settings) => ({
+    origDatablocks,
+    count,
+    tablesSettings: {
+      columns: settings.fe_datafiles_table_columns,
+    },
+  }),
+);

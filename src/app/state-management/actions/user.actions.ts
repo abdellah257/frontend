@@ -5,7 +5,12 @@ import {
   UserIdentity,
   UserSettings,
 } from "@scicatproject/scicat-sdk-ts-angular";
-import { Message, Settings, TableColumn } from "state-management/models";
+import {
+  Message,
+  Settings,
+  SettingScope,
+  TableColumn,
+} from "state-management/models";
 import { AppConfigInterface } from "app-config.service";
 import { AccessTokenInterface } from "shared/services/auth/auth.service";
 import {
@@ -17,7 +22,7 @@ export const setTableColumnsAction = createAction(
   "[User] Set Table Columns",
   props<{
     columns: TableColumn[];
-    scope: "dataset" | "proposal" | "sample" | "instrument" | "file";
+    scope: SettingScope;
   }>(),
 );
 
@@ -155,7 +160,7 @@ export const selectColumnAction = createAction(
   props<{
     name: string;
     columnType: "standard" | "custom";
-    scope: "dataset" | "proposal" | "sample" | "instrument" | "file";
+    scope: SettingScope;
   }>(),
 );
 export const deselectColumnAction = createAction(
@@ -163,7 +168,7 @@ export const deselectColumnAction = createAction(
   props<{
     name: string;
     columnType: "standard" | "custom";
-    scope: "dataset" | "proposal" | "sample" | "instrument" | "file";
+    scope: SettingScope;
   }>(),
 );
 
