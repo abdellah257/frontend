@@ -32,6 +32,7 @@ export class HDF5ViewerComponent implements OnInit {
 
     const viewerUrl = new URL(this.data.baseUrl);
     viewerUrl.searchParams.set("url", fileUrl.toString());
+    viewerUrl.searchParams.set("path", "/entry0");
 
     this.originalUrl = viewerUrl.toString();
     this.setIframe();

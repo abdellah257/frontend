@@ -44,6 +44,8 @@ interface LoginForm {
 })
 export class LoginComponent implements OnInit, OnDestroy {
   private proceedSubscription = new Subscription();
+  private dataIllSsoCheckFrame?: HTMLIFrameElement;
+  private dataIllSsoCheckTimeout?: ReturnType<typeof setTimeout>;
   vm$ = this.store.select(selectLoginPageViewModel);
 
   appConfig: AppConfigInterface = this.appConfigService.getConfig();
@@ -94,6 +96,48 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.dialog.open(PrivacyDialogComponent, {
       width: "auto",
     });
+  }
+
+  private triggerDataIllSsoCheck() {
+    this.clearDataIllSsoCheck();
+
+    if (!this.document.body) {
+      return;
+    }
+
+    const frame = this.document.createElement("iframe");
+    frame.src = "https://data.ill.fr";
+    frame.title = "data.ill.fr SSO check";
+    frame.tabIndex = -1;
+    frame.setAttribute("aria-hidden", "true");
+    frame.style.position = "absolute";
+    frame.style.left = "-9999px";
+    frame.style.top = "-9999px";
+    frame.style.width = "0";
+    frame.style.height = "0";
+    frame.style.border = "0";
+    frame.style.opacity = "0";
+    frame.style.pointerEvents = "none";
+    frame.addEventListener("load", () => this.clearDataIllSsoCheck(), {
+      once: true,
+    });
+
+    this.dataIllSsoCheckFrame = frame;
+    this.document.body.appendChild(frame);
+    this.dataIllSsoCheckTimeout = setTimeout(
+      () => this.clearDataIllSsoCheck(),
+      30000,
+    );
+  }
+
+  private clearDataIllSsoCheck() {
+    if (this.dataIllSsoCheckTimeout !== undefined) {
+      clearTimeout(this.dataIllSsoCheckTimeout);
+      this.dataIllSsoCheckTimeout = undefined;
+    }
+
+    this.dataIllSsoCheckFrame?.remove();
+    this.dataIllSsoCheckFrame = undefined;
   }
 
   /**
@@ -165,15 +209,8 @@ export class LoginComponent implements OnInit, OnDestroy {
             adLoginResponse: { access_token: accessToken, userId },
           }),
         );
-        // Temporary solution open data.ill.fr for a brief time with the same access token
-        console.log("Attempting temporary open for SSO check for data.ill.fr");
-        const url = "https://data.ill.fr";
-        const newWindow = window.open(url, "_blank");
-        setTimeout(() => {
-          if (newWindow) {
-            newWindow.close();
-          }
-        }, 600); // adjust timing if needed
+        // Temporary solution: trigger data.ill.fr SSO check without changing tabs.
+        this.triggerDataIllSsoCheck();
       }
     });
 

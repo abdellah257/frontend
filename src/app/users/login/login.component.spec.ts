@@ -1,7 +1,9 @@
 import {
   ComponentFixture,
   TestBed,
+  fakeAsync,
   inject,
+  tick,
   waitForAsync,
 } from "@angular/core/testing";
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
@@ -27,6 +29,7 @@ import { provideMockStore } from "@ngrx/store/testing";
 import { selectLoginPageViewModel } from "state-management/selectors/user.selectors";
 import { HttpErrorResponse } from "@angular/common/http";
 import { MatTabsModule } from "@angular/material/tabs";
+import { of } from "rxjs";
 
 const getConfig = () => ({
   archiveWorkflowEnabled: true,
@@ -246,6 +249,56 @@ describe("LoginComponent", () => {
       expect(dispatchSpy).toHaveBeenCalledWith("/auth/foo");
       // expect(component.document.location.href).toEqual(`${appConfig.lbBaseURL}/auth/foo`);
     });
+  });
+
+  describe("data.ill.fr SSO check", () => {
+    beforeEach(() => {
+      fixture = TestBed.createComponent(LoginComponent);
+      component = fixture.componentInstance;
+
+      const activatedRoute = fixture.debugElement.injector.get(
+        ActivatedRoute,
+      ) as MockActivatedRoute;
+      activatedRoute.queryParams = of({
+        returnUrl: "/datasets",
+        "access-token": "test-token",
+        "user-id": "test-user",
+      });
+    });
+
+    it("should use a hidden iframe without opening a new tab", fakeAsync(() => {
+      const windowOpenSpy = spyOn(window, "open");
+
+      fixture.detectChanges();
+
+      const frame = component.document.body.querySelector(
+        'iframe[src="https://data.ill.fr"]',
+      ) as HTMLIFrameElement;
+
+      expect(windowOpenSpy).not.toHaveBeenCalled();
+      expect(frame).toBeTruthy();
+      expect(frame.getAttribute("aria-hidden")).toBe("true");
+      expect(frame.tabIndex).toBe(-1);
+      expect(frame.style.position).toBe("absolute");
+      expect(frame.style.width).toBe("0px");
+      expect(frame.style.height).toBe("0px");
+
+      tick(600);
+
+      expect(
+        component.document.body.querySelector(
+          'iframe[src="https://data.ill.fr"]',
+        ),
+      ).toBeTruthy();
+
+      frame.dispatchEvent(new Event("load"));
+
+      expect(
+        component.document.body.querySelector(
+          'iframe[src="https://data.ill.fr"]',
+        ),
+      ).toBeNull();
+    }));
   });
 
   describe("should contain service account hint", () => {
